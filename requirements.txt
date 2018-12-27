@@ -1,0 +1,2 @@
+libpff-python==20161119
+unicodecsv==0.14.1
