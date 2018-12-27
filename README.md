@@ -28,3 +28,13 @@ optional arguments:
   -h, --help  show this help message and exit
   -j, --json  Output to JSON
   -c, --csv   Output to CSV.
+
+
+------------------------
+
+Requires (or later)
+
+libpff-python==20161119
+unicodecsv==0.14.1
+
+pip install -r requirements.txt
