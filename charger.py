@@ -6,13 +6,15 @@ import random
 import string
 import os
 import json
-
+import email.utils
+import calendar
+import datetime
 
 messages = 0
 emailproccessor = {}
 nummess = 0
 attachments = []
-fields = ['m_unique', 'm_fullheader','m_from','m_replyto','m_to','m_cc','m_subject','m_contenttype','m_importance','m_xmailer', 'm_returnpath', 'm_client','m_id','m_date', 'm_body', 'm_attachment_count']
+fields = ['m_unique', 'm_date_utc', 'm_fullheader','m_from','m_replyto','m_to','m_cc','m_subject','m_contenttype','m_importance','m_xmailer', 'm_returnpath', 'm_client','m_id','m_date', 'm_body', 'm_attachment_count']
 
 try:
     import pypff
@@ -29,7 +31,8 @@ except ImportError:
 def id_generator(size=10, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
-def getMessages(folder):
+
+def getmessages(folder):
     global messages
     global nummess
     nummess += folder.number_of_sub_messages
@@ -45,29 +48,32 @@ def getMessages(folder):
                 headers = message.get_transport_headers().splitlines()
                 for header in headers:
                     if header.strip().lower().startswith("from:"):
-                        emailproccessor[m_unique]['m_from'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_from'] = header.strip().lower().strip('from: ')
                     elif header.strip().lower().startswith("reply-to:"):
-                        emailproccessor[m_unique]['m_replyto'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_replyto'] = header.strip().lower().strip('reply-to: ')
                     elif header.strip().lower().startswith("to:"):
-                        emailproccessor[m_unique]['m_to'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_to'] = header.strip().lower().strip('to: ')
                     elif header.strip().lower().startswith("cc:"):
-                        emailproccessor[m_unique]['m_cc'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_cc'] = header.strip().lower().strip('cc: ')
                     elif header.strip().lower().startswith("subject:"):
-                        emailproccessor[m_unique]['m_subject'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_subject'] = header.strip().lower().strip('subject: ')
                     elif header.strip().lower().startswith("content-type:"):
-                        emailproccessor[m_unique]['m_contenttype'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_contenttype'] = header.strip().lower().strip('content-type: ')
                     elif header.strip().lower().startswith("importance:"):
-                        emailproccessor[m_unique]['m_importance'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_importance'] = header.strip().lower().strip('content-type: ')
                     elif header.strip().lower().startswith("x-mailer:"):
-                        emailproccessor[m_unique]['m_xmailer'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_xmailer'] = header.strip().lower().strip('x-mailer: ')
                     elif header.strip().lower().startswith("x-originating-client"):
-                        emailproccessor[m_unique]['m_client'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_client'] = header.strip().lower().strip('x-originating-client: ')
                     elif header.strip().lower().startswith("message-id:"):
-                        emailproccessor[m_unique]['m_id'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_id'] = header.strip().lower().strip('message-id: ')
                     elif header.strip().lower().startswith("date:"):
-                        emailproccessor[m_unique]['m_date'] = header.strip().lower()
+                         datetest = header.strip().lower().strip('date:')
+                         emailproccessor[m_unique]['m_date'] = datetest
+                         emailproccessor[m_unique]['m_date_utc'] = email_time_to_utc_datetime(datetest)
+                        # emailproccessor[m_unique]['m_date']
                     elif header.strip().lower().startswith("return-path:"):
-                        emailproccessor[m_unique]['m_returnpath'] = header.strip().lower()
+                        emailproccessor[m_unique]['m_returnpath'] = header.strip().lower().strip('return-path: ')
 
                     try:
                         x = emailproccessor[m_unique]['m_replyto']
@@ -120,7 +126,20 @@ def iteratefolder(rootfolder):
     for folder in rootfolder.sub_folders:
         if folder.number_of_sub_folders:
             iteratefolder(folder)
-        getMessages(folder)
+        getmessages(folder)
+
+def datfixeruper(datetof):
+   print datetof
+   # fri, 19 oct 2018 15:39:06 -0700
+   print email.utils.parsedate(datetof)
+
+
+def email_time_to_utc_datetime(s):
+    tt = email.utils.parsedate_tz(s)
+    if tt is None: return None
+    timestamp = calendar.timegm(tt) - tt[9]
+    return datetime.datetime.utcfromtimestamp(timestamp)
+
 
 
 def main():
