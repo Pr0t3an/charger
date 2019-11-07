@@ -36,4 +36,5 @@ libpff-python==20161119
 unicodecsv==0.14.1
 
 pip install -r requirements.txt
+
 touch charmods/__init__.py
