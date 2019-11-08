@@ -102,7 +102,8 @@ def getmessages(folder):
                 # No email header
                 continue
             try:
-                emailproccessor[m_unique]['m_body'] = message.plain_text_body
+                temp = message.plain_text_body.replace(",", "','")
+                emailproccessor[m_unique]['m_body'] = temp
                 if message.number_of_attachments > 0:
                     emailproccessor[m_unique]['m_attachment_count'] = message.number_of_attachments
                 else:
